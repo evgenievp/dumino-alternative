@@ -202,293 +202,421 @@
   </style>
 </head>
 <body>
-  <main class="app">
-    <header>
-      <h1>Думино</h1>
-      <p class="subtitle">Свързвай буквите с пръст</p>
-    </header>
+<main class="app">
+  <header>
+    <h1>Думино</h1>
+    <p class="subtitle">Свързвай буквите с пръст</p>
+  </header>
 
-<section class="panel status">
-  <div>Точки: <span id="score">0</span></div>
-  <div>Думи: <span id="wordCount">0</span></div>
-  <div>Време: <span id="timer">2:00</span></div>
-</section>
-    <section class="panel">
-      <div id="currentWord" class="current-word">Плъзни през буквите</div>
-      <div id="message" class="message"></div>
-    </section>
+  <section class="panel status">
+    <div>Точки: <span id="score">0</span></div>
+    <div>Думи: <span id="wordCount">0</span></div>
+    <div>Време: <span id="timer">2:00</span></div>
+  </section>
+  <section class="panel">
+    <div id="currentWord" class="current-word">Плъзни през буквите</div>
+    <div id="message" class="message"></div>
+  </section>
 
-    <section class="panel board-wrap">
-      <div id="board" class="board" aria-label="Поле с букви"></div>
-    </section>
+  <section class="panel board-wrap">
+    <div id="board" class="board" aria-label="Поле с букви"></div>
+  </section>
 
-    <section class="buttons">
-      <button id="clearBtn" class="secondary">Изчисти</button>
-      <button id="newBtn" class="primary">Ново поле</button>
-    </section>
+  <section class="buttons">
+    <button id="clearBtn" class="secondary">Изчисти</button>
+    <button id="newBtn" class="primary">Ново поле</button>
+  </section>
 
-    <section class="panel">
-      <h2 class="found-title">Намерени думи</h2>
-      <div id="foundWords" class="found-words"></div>
-    </section>
+  <section class="panel">
+    <h2 class="found-title">Намерени думи</h2>
+    <div id="foundWords" class="found-words"></div>
+  </section>
 
-    <section class="panel help">
-      Задръж пръста върху първата буква и плъзгай през съседни букви.
-      Може по хоризонтала, вертикала и диагонал. Една буква не може да се ползва два пъти в една дума.
-    </section>
-  </main>
+  <section class="panel help">
+    Задръж пръста върху първата буква и плъзгай през съседни букви.
+    Може по хоризонтала, вертикала и диагонал. Една буква не може да се ползва два пъти в една дума.
+  </section>
+</main>
 
-  <script>
-	let dictionary = new Set();
+<script>
+  let dictionary = new Set();
+  let playableWords = [];
 
-	async function loadDictionary() {	
-		const response = await fetch("words.txt");
-		const text = await response.text();
+  async function loadDictionary() {
+      const response = await fetch("words.txt");
 
-		dictionary = new Set(
-			text
-				.split(/\r?\n/)
-				.map(w => w.trim().toLowerCase())
-				.filter(w => w.length > 1)
-		);
+      if (!response.ok) {
+        throw new Error("Речникът не може да бъде зареден.");
+      }
 
-		console.log("Заредени думи:", dictionary.size);
-	}
+      const text = await response.text();
 
-    const commonLetters = [
-      "А","А","А","А","Е","Е","Е","Е","И","И","И","О","О","О",
-      "Н","Н","Н","Р","Р","Р","Т","Т","С","С","Л","Л","К","К",
-      "М","М","В","В","Д","Д","П","Б","Г","Я","У","Ъ","Ж","З","Ч","Ш","Ц","Х","Й"
-    ];
+      const words = text
+        .split(/
+?
+/)
+        .map(word => word.trim().toLocaleLowerCase("bg-BG"))
+        .filter(word => /^[а-я]+$/u.test(word));
 
-    const boardEl = document.getElementById("board");
-    const currentWordEl = document.getElementById("currentWord");
-    const messageEl = document.getElementById("message");
-    const scoreEl = document.getElementById("score");
-    const wordCountEl = document.getElementById("wordCount");
-    const foundWordsEl = document.getElementById("foundWords");
-	const timerEl = document.getElementById("timer");
-    const clearBtn = document.getElementById("clearBtn");
-    const newBtn = document.getElementById("newBtn");
-	const ROUND_SECONDS = 120;
+      dictionary = new Set(words);
 
-	let timeLeft = ROUND_SECONDS;
-	let timerInterval = null;
+      // Само думи, които са удобни за поставяне в поле 4×4.
+      playableWords = [...dictionary].filter(
+        word => word.length >= 3 && word.length <= 6
+      );
 
-    let letters = [];
-    let selected = [];
-    let dragging = false;
-    let score = 0;
-    let foundWords = new Set();
-
-    function randomLetter() {
-      return commonLetters[Math.floor(Math.random() * commonLetters.length)];
+      console.log("Заредени думи:", dictionary.size);
+      console.log("Подходящи за дъската:", playableWords.length);
     }
 
-	
+  const commonLetters = [
+    "А","А","А","А","Е","Е","Е","Е","И","И","И","О","О","О",
+    "Н","Н","Н","Р","Р","Р","Т","Т","С","С","Л","Л","К","К",
+    "М","М","В","В","Д","Д","П","Б","Г","Я","У","Ъ","Ж","З","Ч","Ш","Ц","Х","Й"
+  ];
+
+  const boardEl = document.getElementById("board");
+  const currentWordEl = document.getElementById("currentWord");
+  const messageEl = document.getElementById("message");
+  const scoreEl = document.getElementById("score");
+  const wordCountEl = document.getElementById("wordCount");
+  const foundWordsEl = document.getElementById("foundWords");
+  const timerEl = document.getElementById("timer");
+  const clearBtn = document.getElementById("clearBtn");
+  const newBtn = document.getElementById("newBtn");
+  const ROUND_SECONDS = 120;
+
+  let timeLeft = ROUND_SECONDS;
+  let timerInterval = null;
+
+  let letters = [];
+  let selected = [];
+  let dragging = false;
+  let score = 0;
+  let foundWords = new Set();
+
+  function randomLetter() {
+    return commonLetters[Math.floor(Math.random() * commonLetters.length)];
+  }
+
+
 
 
 function startTimer() {
-  clearInterval(timerInterval);
-  timeLeft = ROUND_SECONDS;
+clearInterval(timerInterval);
+timeLeft = ROUND_SECONDS;
+updateTimer();
+
+timerInterval = setInterval(() => {
+  timeLeft--;
   updateTimer();
 
-  timerInterval = setInterval(() => {
-    timeLeft--;
-    updateTimer();
-
-    if (timeLeft <= 0) {
-      startNewRound();
-    }
-  }, 1000);
+  if (timeLeft <= 0) {
+    startNewRound();
+  }
+}, 1000);
 }
 
 function updateTimer() {
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
+const minutes = Math.floor(timeLeft / 60);
+const seconds = timeLeft % 60;
 
-  timerEl.textContent =
-    `${minutes}:${seconds.toString().padStart(2, "0")}`;
+timerEl.textContent =
+  `${minutes}:${seconds.toString().padStart(2, "0")}`;
 }
 
 function startNewRound() {
-  clearInterval(timerInterval);
+clearInterval(timerInterval);
 
-  dragging = false;
-  selected = [];
-  score = 0;
-  foundWords = new Set();
+dragging = false;
+selected = [];
+score = 0;
+foundWords = new Set();
 
-  scoreEl.textContent = "0";
-  wordCountEl.textContent = "0";
-  foundWordsEl.innerHTML = "";
+scoreEl.textContent = "0";
+wordCountEl.textContent = "0";
+foundWordsEl.innerHTML = "";
 
-  createBoard();
-  showMessage("Започва нова игра!", true);
-  startTimer();
+createBoard();
+showMessage("Започва нова игра!", true);
+startTimer();
 }
 
-    function createBoard() {
-      letters = Array.from({ length: 16 }, randomLetter);
+  function shuffled(array) {
+    const copy = [...array];
 
-      // Малко по-приятна начална дъска с повече гласни.
-      const vowelPositions = [1, 4, 7, 10, 13];
-      const vowels = ["А", "Е", "И", "О", "У", "Я"];
-      vowelPositions.forEach(index => {
-        letters[index] = vowels[Math.floor(Math.random() * vowels.length)];
-      });
-
-      selected = [];
-      boardEl.innerHTML = "";
-      clearMessage();
-
-      letters.forEach((letter, index) => {
-        const tile = document.createElement("div");
-        tile.className = "tile";
-        tile.textContent = letter;
-        tile.dataset.index = index;
-        tile.setAttribute("role", "button");
-        tile.setAttribute("aria-label", "Буква " + letter);
-
-        tile.addEventListener("pointerdown", event => {
-          event.preventDefault();
-          dragging = true;
-          selected = [];
-          addTile(index);
-          tile.setPointerCapture?.(event.pointerId);
-        });
-
-        tile.addEventListener("pointerenter", event => {
-          if (!dragging || event.buttons === 0) return;
-          addTile(index);
-        });
-
-        tile.addEventListener("pointermove", event => {
-          if (!dragging) return;
-          const element = document.elementFromPoint(event.clientX, event.clientY);
-          const targetTile = element?.closest(".tile");
-          if (targetTile) {
-            addTile(Number(targetTile.dataset.index));
-          }
-        });
-
-        boardEl.appendChild(tile);
-      });
-
-      updateCurrentWord();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
     }
 
-    function rowOf(index) {
-      return Math.floor(index / 4);
+    return copy;
+  }
+
+  function neighboursOf(index) {
+    const neighbours = [];
+
+    for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
+      for (let colOffset = -1; colOffset <= 1; colOffset++) {
+        if (rowOffset === 0 && colOffset === 0) continue;
+
+        const row = rowOf(index) + rowOffset;
+        const col = colOf(index) + colOffset;
+
+        if (row >= 0 && row < 4 && col >= 0 && col < 4) {
+          neighbours.push(row * 4 + col);
+        }
+      }
     }
 
-    function colOf(index) {
-      return index % 4;
-    }
+    return shuffled(neighbours);
+  }
 
-    function areAdjacent(a, b) {
-      const rowDiff = Math.abs(rowOf(a) - rowOf(b));
-      const colDiff = Math.abs(colOf(a) - colOf(b));
-      return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
-    }
+  function findPathForWord(word, boardLetters) {
+    const upperWord = word.toLocaleUpperCase("bg-BG");
 
-    function addTile(index) {
-      if (selected.includes(index)) return;
+    function search(position, letterIndex, path, used) {
+      const boardLetter = boardLetters[position];
+      const neededLetter = upperWord[letterIndex];
 
-      if (selected.length > 0) {
-        const previous = selected[selected.length - 1];
-        if (!areAdjacent(previous, index)) return;
+      // Клетката може да е празна или вече да съдържа същата буква.
+      if (boardLetter !== null && boardLetter !== neededLetter) {
+        return null;
       }
 
-      selected.push(index);
-      renderSelection();
-      updateCurrentWord();
-    }
+      const nextPath = [...path, position];
+      const nextUsed = new Set(used);
+      nextUsed.add(position);
 
-    function renderSelection() {
-      [...boardEl.children].forEach((tile, index) => {
-        tile.classList.toggle("selected", selected.includes(index));
-      });
-    }
-
-    function currentWord() {
-      return selected.map(index => letters[index]).join("").toLocaleLowerCase("bg-BG");
-    }
-
-    function updateCurrentWord() {
-      const word = currentWord();
-      currentWordEl.textContent = word ? word.toLocaleUpperCase("bg-BG") : "Плъзни през буквите";
-    }
-
-    function finishWord() {
-      if (!dragging) return;
-      dragging = false;
-
-      const word = currentWord();
-
-      if (word.length < 2) {
-        showMessage("Думата е твърде кратка.", false);
-      } else if (foundWords.has(word)) {
-        showMessage("Тази дума вече е намерена.", false);
-      } else if (dictionary.has(word)) {
-        foundWords.add(word);
-        const gained = word.length * word.length;
-        score += gained;
-        scoreEl.textContent = score;
-        wordCountEl.textContent = foundWords.size;
-        addFoundWord(word);
-        showMessage("Браво! +" + gained + " точки", true);
-      } else {
-        showMessage("Не намирам такава дума.", false);
+      if (letterIndex === upperWord.length - 1) {
+        return nextPath;
       }
 
-      selected = [];
-      renderSelection();
-      updateCurrentWord();
+      for (const neighbour of neighboursOf(position)) {
+        if (nextUsed.has(neighbour)) continue;
+
+        const result = search(
+          neighbour,
+          letterIndex + 1,
+          nextPath,
+          nextUsed
+        );
+
+        if (result) return result;
+      }
+
+      return null;
     }
 
-    function clearSelection() {
-      dragging = false;
-      selected = [];
-      renderSelection();
-      updateCurrentWord();
-      clearMessage();
+    for (const startPosition of shuffled([...Array(16).keys()])) {
+      const result = search(startPosition, 0, [], new Set());
+      if (result) return result;
     }
 
-    function addFoundWord(word) {
-      const chip = document.createElement("span");
-      chip.className = "word-chip";
-      chip.textContent = word.toLocaleUpperCase("bg-BG");
-      foundWordsEl.prepend(chip);
+    return null;
+  }
+
+  function placeGuaranteedWords() {
+    const boardLetters = Array(16).fill(null);
+    const chosenWords = [];
+    const candidates = shuffled(playableWords);
+    const targetWordCount = 4;
+
+    // Ограничаваме опитите, за да не блокира телефонът при огромен речник.
+    let attempts = 0;
+
+    for (const word of candidates) {
+      if (chosenWords.length >= targetWordCount || attempts >= 500) break;
+      attempts++;
+
+      if (chosenWords.includes(word)) continue;
+
+      const path = findPathForWord(word, boardLetters);
+      if (!path) continue;
+
+      const upperWord = word.toLocaleUpperCase("bg-BG");
+
+      path.forEach((position, index) => {
+        boardLetters[position] = upperWord[index];
+      });
+
+      chosenWords.push(word);
     }
 
-    function showMessage(text, ok) {
-      messageEl.textContent = text;
-      messageEl.className = "message " + (ok ? "ok" : "bad");
+    // Ако по изключение речникът е твърде малък или странен,
+    // дъската пак се запълва и остава годна за игра.
+    for (let i = 0; i < boardLetters.length; i++) {
+      if (boardLetters[i] === null) {
+        boardLetters[i] = randomLetter();
+      }
     }
 
-    function clearMessage() {
-      messageEl.textContent = "";
-      messageEl.className = "message";
+    console.log("Гарантирани думи:", chosenWords);
+    return boardLetters;
+  }
+
+  function createBoard() {
+    letters = playableWords.length > 0
+      ? placeGuaranteedWords()
+      : Array.from({ length: 16 }, randomLetter);
+
+    selected = [];
+    boardEl.innerHTML = "";
+    clearMessage();
+
+    letters.forEach((letter, index) => {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.textContent = letter;
+      tile.dataset.index = index;
+      tile.setAttribute("role", "button");
+      tile.setAttribute("aria-label", "Буква " + letter);
+
+      tile.addEventListener("pointerdown", event => {
+        event.preventDefault();
+        dragging = true;
+        selected = [];
+        addTile(index);
+        tile.setPointerCapture?.(event.pointerId);
+      });
+
+      tile.addEventListener("pointerenter", event => {
+        if (!dragging || event.buttons === 0) return;
+        addTile(index);
+      });
+
+      tile.addEventListener("pointermove", event => {
+        if (!dragging) return;
+
+        const element = document.elementFromPoint(
+          event.clientX,
+          event.clientY
+        );
+
+        const targetTile = element?.closest(".tile");
+
+        if (targetTile) {
+          addTile(Number(targetTile.dataset.index));
+        }
+      });
+
+      boardEl.appendChild(tile);
+    });
+
+    updateCurrentWord();
+  }
+
+  function rowOf(index) {
+    return Math.floor(index / 4);
+  }
+
+  function colOf(index) {
+    return index % 4;
+  }
+
+  function areAdjacent(a, b) {
+    const rowDiff = Math.abs(rowOf(a) - rowOf(b));
+    const colDiff = Math.abs(colOf(a) - colOf(b));
+    return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+  }
+
+  function addTile(index) {
+    if (selected.includes(index)) return;
+
+    if (selected.length > 0) {
+      const previous = selected[selected.length - 1];
+      if (!areAdjacent(previous, index)) return;
     }
 
-    document.addEventListener("pointerup", finishWord);
-    document.addEventListener("pointercancel", clearSelection);
-    clearBtn.addEventListener("click", clearSelection);
-    newBtn.addEventListener("click", startNewRound);
+    selected.push(index);
+    renderSelection();
+    updateCurrentWord();
+  }
+
+  function renderSelection() {
+    [...boardEl.children].forEach((tile, index) => {
+      tile.classList.toggle("selected", selected.includes(index));
+    });
+  }
+
+  function currentWord() {
+    return selected.map(index => letters[index]).join("").toLocaleLowerCase("bg-BG");
+  }
+
+  function updateCurrentWord() {
+    const word = currentWord();
+    currentWordEl.textContent = word ? word.toLocaleUpperCase("bg-BG") : "Плъзни през буквите";
+  }
+
+  function finishWord() {
+    if (!dragging) return;
+    dragging = false;
+
+    const word = currentWord();
+
+    if (word.length < 2) {
+      showMessage("Думата е твърде кратка.", false);
+    } else if (foundWords.has(word)) {
+      showMessage("Тази дума вече е намерена.", false);
+    } else if (dictionary.has(word)) {
+      foundWords.add(word);
+      const gained = word.length * word.length;
+      score += gained;
+      scoreEl.textContent = score;
+      wordCountEl.textContent = foundWords.size;
+      addFoundWord(word);
+      showMessage("Браво! +" + gained + " точки", true);
+    } else {
+      showMessage("Не намирам такава дума.", false);
+    }
+
+    selected = [];
+    renderSelection();
+    updateCurrentWord();
+  }
+
+  function clearSelection() {
+    dragging = false;
+    selected = [];
+    renderSelection();
+    updateCurrentWord();
+    clearMessage();
+  }
+
+  function addFoundWord(word) {
+    const chip = document.createElement("span");
+    chip.className = "word-chip";
+    chip.textContent = word.toLocaleUpperCase("bg-BG");
+    foundWordsEl.prepend(chip);
+  }
+
+  function showMessage(text, ok) {
+    messageEl.textContent = text;
+    messageEl.className = "message " + (ok ? "ok" : "bad");
+  }
+
+  function clearMessage() {
+    messageEl.textContent = "";
+    messageEl.className = "message";
+  }
+
+  document.addEventListener("pointerup", finishWord);
+  document.addEventListener("pointercancel", clearSelection);
+  clearBtn.addEventListener("click", clearSelection);
+  newBtn.addEventListener("click", startNewRound);
 
 
 loadDictionary()
-  .then(() => {
-    createBoard();
-    startTimer();
-  })
-  .catch(error => {
-    console.error(error);
-    createBoard();
-    startTimer();
-    showMessage("Речникът не се зареди.", false);
-  });
-  </script>
+.then(() => {
+  createBoard();
+  startTimer();
+})
+.catch(error => {
+  console.error(error);
+  createBoard();
+  startTimer();
+  showMessage("Речникът не се зареди.", false);
+});
+</script>
 </body>
 </html>
