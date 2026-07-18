@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#f4efe6" />
+  <title>Думино</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --card: #fffaf2;
+      --text: #2f2a24;
+      --accent: #5c7c55;
+      --accent-dark: #3f5f3a;
+      --selected: #f2c66d;
+      --border: #d9cfbf;
+      --danger: #b04a3f;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
+      padding: 18px;
+      touch-action: none;
+    }
+
+    .app {
+      width: min(100%, 520px);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: clamp(32px, 8vw, 48px);
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      margin: -4px 0 4px;
+      text-align: center;
+      font-size: 17px;
+      opacity: 0.75;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      padding: 14px;
+      box-shadow: 0 5px 16px rgba(50, 40, 30, 0.08);
+    }
+
+    .status {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .current-word {
+      min-height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, 7vw, 34px);
+      font-weight: 800;
+      letter-spacing: 2px;
+      overflow-wrap: anywhere;
+    }
+
+    .message {
+      min-height: 28px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .message.ok {
+      color: var(--accent-dark);
+    }
+
+    .message.bad {
+      color: var(--danger);
+    }
+
+    .board-wrap {
+      position: relative;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      user-select: none;
+    }
+
+    .tile {
+      aspect-ratio: 1 / 1;
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      background: #ffffff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: clamp(28px, 9vw, 46px);
+      font-weight: 900;
+      cursor: pointer;
+      transition: transform 0.08s ease, background 0.08s ease;
+      touch-action: none;
+    }
+
+    .tile.selected {
+      background: var(--selected);
+      border-color: #c89a3d;
+      transform: scale(0.93);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 14px;
+      padding: 15px 12px;
+      font-size: 18px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .secondary {
+      background: #e7dfd2;
+      color: var(--text);
+    }
+
+    .found-title {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+
+    .found-words {
+      min-height: 42px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .word-chip {
+      background: #e7efdf;
+      border: 1px solid #b8c9aa;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-weight: 700;
+    }
+
+    .help {
+      font-size: 15px;
+      line-height: 1.45;
+      opacity: 0.82;
+    }
+
+    @media (max-width: 380px) {
+      body {
+        padding: 10px;
+      }
+
+      .board {
+        gap: 7px;
+      }
+
+      .tile {
+        border-radius: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <h1>Думино</h1>
+      <p class="subtitle">Свързвай буквите с пръст</p>
+    </header>
+
+    <section class="panel status">
+      <div>Точки: <span id="score">0</span></div>
+      <div>Думи: <span id="wordCount">0</span></div>
+    </section>
+
+    <section class="panel">
+      <div id="currentWord" class="current-word">Плъзни през буквите</div>
+      <div id="message" class="message"></div>
+    </section>
+
+    <section class="panel board-wrap">
+      <div id="board" class="board" aria-label="Поле с букви"></div>
+    </section>
+
+    <section class="buttons">
+      <button id="clearBtn" class="secondary">Изчисти</button>
+      <button id="newBtn" class="primary">Ново поле</button>
+    </section>
+
+    <section class="panel">
+      <h2 class="found-title">Намерени думи</h2>
+      <div id="foundWords" class="found-words"></div>
+    </section>
+
+    <section class="panel help">
+      Задръж пръста върху първата буква и плъзгай през съседни букви.
+      Може по хоризонтала, вертикала и диагонал. Една буква не може да се ползва два пъти в една дума.
+    </section>
+  </main>
+
+  <script>
+	let dictionary = new Set();
+
+	async function loadDictionary() {	
+		const response = await fetch("words.txt");
+		const text = await response.text();
+
+		dictionary = new Set(
+			text
+				.split(/\r?\n/)
+				.map(w => w.trim().toLowerCase())
+				.filter(w => w.length > 1)
+		);
+
+		console.log("Заредени думи:", dictionary.size);
+	}
+
+    const commonLetters = [
+      "А","А","А","А","Е","Е","Е","Е","И","И","И","О","О","О",
+      "Н","Н","Н","Р","Р","Р","Т","Т","С","С","Л","Л","К","К",
+      "М","М","В","В","Д","Д","П","Б","Г","Я","У","Ъ","Ж","З","Ч","Ш","Ц","Х","Й"
+    ];
+
+    const boardEl = document.getElementById("board");
+    const currentWordEl = document.getElementById("currentWord");
+    const messageEl = document.getElementById("message");
+    const scoreEl = document.getElementById("score");
+    const wordCountEl = document.getElementById("wordCount");
+    const foundWordsEl = document.getElementById("foundWords");
+    const clearBtn = document.getElementById("clearBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    let letters = [];
+    let selected = [];
+    let dragging = false;
+    let score = 0;
+    let foundWords = new Set();
+
+    function randomLetter() {
+      return commonLetters[Math.floor(Math.random() * commonLetters.length)];
+    }
+
+    function createBoard() {
+      letters = Array.from({ length: 16 }, randomLetter);
+
+      // Малко по-приятна начална дъска с повече гласни.
+      const vowelPositions = [1, 4, 7, 10, 13];
+      const vowels = ["А", "Е", "И", "О", "У", "Я"];
+      vowelPositions.forEach(index => {
+        letters[index] = vowels[Math.floor(Math.random() * vowels.length)];
+      });
+
+      selected = [];
+      boardEl.innerHTML = "";
+      clearMessage();
+
+      letters.forEach((letter, index) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.textContent = letter;
+        tile.dataset.index = index;
+        tile.setAttribute("role", "button");
+        tile.setAttribute("aria-label", "Буква " + letter);
+
+        tile.addEventListener("pointerdown", event => {
+          event.preventDefault();
+          dragging = true;
+          selected = [];
+          addTile(index);
+          tile.setPointerCapture?.(event.pointerId);
+        });
+
+        tile.addEventListener("pointerenter", event => {
+          if (!dragging || event.buttons === 0) return;
+          addTile(index);
+        });
+
+        tile.addEventListener("pointermove", event => {
+          if (!dragging) return;
+          const element = document.elementFromPoint(event.clientX, event.clientY);
+          const targetTile = element?.closest(".tile");
+          if (targetTile) {
+            addTile(Number(targetTile.dataset.index));
+          }
+        });
+
+        boardEl.appendChild(tile);
+      });
+
+      updateCurrentWord();
+    }
+
+    function rowOf(index) {
+      return Math.floor(index / 4);
+    }
+
+    function colOf(index) {
+      return index % 4;
+    }
+
+    function areAdjacent(a, b) {
+      const rowDiff = Math.abs(rowOf(a) - rowOf(b));
+      const colDiff = Math.abs(colOf(a) - colOf(b));
+      return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+    }
+
+    function addTile(index) {
+      if (selected.includes(index)) return;
+
+      if (selected.length > 0) {
+        const previous = selected[selected.length - 1];
+        if (!areAdjacent(previous, index)) return;
+      }
+
+      selected.push(index);
+      renderSelection();
+      updateCurrentWord();
+    }
+
+    function renderSelection() {
+      [...boardEl.children].forEach((tile, index) => {
+        tile.classList.toggle("selected", selected.includes(index));
+      });
+    }
+
+    function currentWord() {
+      return selected.map(index => letters[index]).join("").toLocaleLowerCase("bg-BG");
+    }
+
+    function updateCurrentWord() {
+      const word = currentWord();
+      currentWordEl.textContent = word ? word.toLocaleUpperCase("bg-BG") : "Плъзни през буквите";
+    }
+
+    function finishWord() {
+      if (!dragging) return;
+      dragging = false;
+
+      const word = currentWord();
+
+      if (word.length < 2) {
+        showMessage("Думата е твърде кратка.", false);
+      } else if (foundWords.has(word)) {
+        showMessage("Тази дума вече е намерена.", false);
+      } else if (dictionary.has(word)) {
+        foundWords.add(word);
+        const gained = word.length * word.length;
+        score += gained;
+        scoreEl.textContent = score;
+        wordCountEl.textContent = foundWords.size;
+        addFoundWord(word);
+        showMessage("Браво! +" + gained + " точки", true);
+      } else {
+        showMessage("Не намирам такава дума.", false);
+      }
+
+      selected = [];
+      renderSelection();
+      updateCurrentWord();
+    }
+
+    function clearSelection() {
+      dragging = false;
+      selected = [];
+      renderSelection();
+      updateCurrentWord();
+      clearMessage();
+    }
+
+    function addFoundWord(word) {
+      const chip = document.createElement("span");
+      chip.className = "word-chip";
+      chip.textContent = word.toLocaleUpperCase("bg-BG");
+      foundWordsEl.prepend(chip);
+    }
+
+    function showMessage(text, ok) {
+      messageEl.textContent = text;
+      messageEl.className = "message " + (ok ? "ok" : "bad");
+    }
+
+    function clearMessage() {
+      messageEl.textContent = "";
+      messageEl.className = "message";
+    }
+
+    document.addEventListener("pointerup", finishWord);
+    document.addEventListener("pointercancel", clearSelection);
+    clearBtn.addEventListener("click", clearSelection);
+    newBtn.addEventListener("click", createBoard);
+
+loadDictionary().then(() => {
+    createBoard();
+});
+  </script>
+</body>
+</html>
