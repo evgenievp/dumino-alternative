@@ -65,7 +65,7 @@
 
     .status {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 10px;
       text-align: center;
       font-size: 18px;
@@ -182,6 +182,11 @@
     }
 
     @media (max-width: 380px) {
+      .status {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+
       body {
         padding: 10px;
       }
@@ -203,11 +208,11 @@
       <p class="subtitle">Свързвай буквите с пръст</p>
     </header>
 
-    <section class="panel status">
-      <div>Точки: <span id="score">0</span></div>
-      <div>Думи: <span id="wordCount">0</span></div>
-    </section>
-
+<section class="panel status">
+  <div>Точки: <span id="score">0</span></div>
+  <div>Думи: <span id="wordCount">0</span></div>
+  <div>Време: <span id="timer">2:00</span></div>
+</section>
     <section class="panel">
       <div id="currentWord" class="current-word">Плъзни през буквите</div>
       <div id="message" class="message"></div>
@@ -262,8 +267,13 @@
     const scoreEl = document.getElementById("score");
     const wordCountEl = document.getElementById("wordCount");
     const foundWordsEl = document.getElementById("foundWords");
+	const timerEl = document.getElementById("timer");
     const clearBtn = document.getElementById("clearBtn");
     const newBtn = document.getElementById("newBtn");
+	const ROUND_SECONDS = 120;
+
+	let timeLeft = ROUND_SECONDS;
+	let timerInterval = null;
 
     let letters = [];
     let selected = [];
@@ -274,6 +284,49 @@
     function randomLetter() {
       return commonLetters[Math.floor(Math.random() * commonLetters.length)];
     }
+
+	
+
+
+function startTimer() {
+  clearInterval(timerInterval);
+  timeLeft = ROUND_SECONDS;
+  updateTimer();
+
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimer();
+
+    if (timeLeft <= 0) {
+      startNewRound();
+    }
+  }, 1000);
+}
+
+function updateTimer() {
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  timerEl.textContent =
+    `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
+
+function startNewRound() {
+  clearInterval(timerInterval);
+
+  dragging = false;
+  selected = [];
+  score = 0;
+  foundWords = new Set();
+
+  scoreEl.textContent = "0";
+  wordCountEl.textContent = "0";
+  foundWordsEl.innerHTML = "";
+
+  createBoard();
+  showMessage("Започва нова игра!", true);
+  startTimer();
+}
 
     function createBoard() {
       letters = Array.from({ length: 16 }, randomLetter);
@@ -422,11 +475,20 @@
     document.addEventListener("pointerup", finishWord);
     document.addEventListener("pointercancel", clearSelection);
     clearBtn.addEventListener("click", clearSelection);
-    newBtn.addEventListener("click", createBoard);
+    newBtn.addEventListener("click", startNewRound);
 
-loadDictionary().then(() => {
+
+loadDictionary()
+  .then(() => {
     createBoard();
-});
+    startTimer();
+  })
+  .catch(error => {
+    console.error(error);
+    createBoard();
+    startTimer();
+    showMessage("Речникът не се зареди.", false);
+  });
   </script>
 </body>
 </html>
