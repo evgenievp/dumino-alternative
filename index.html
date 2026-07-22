@@ -6,350 +6,360 @@
   <meta name="theme-color" content="#f4efe6" />
   <title>Думино</title>
 
-</head>
-<style>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --card: #fffaf2;
+      --text: #2f2a24;
+      --accent: #5c7c55;
+      --accent-dark: #3f5f3a;
+      --selected: #f2c66d;
+      --border: #d9cfbf;
+      --danger: #b04a3f;
+      --found-bg: #d9ecc9;
+      --found-border: #7fa869;
+      --found-text: #2f5c26;
+      --missed-bg: #efe9dd;
+      --missed-border: #d9cfbf;
+      --missed-text: #8a8071;
+    }
 
-  :root {
-    --bg: #f4efe6;
-    --card: #fffaf2;
-    --text: #2f2a24;
-    --accent: #5c7c55;
-    --accent-dark: #3f5f3a;
-    --selected: #f2c66d;
-    --border: #d9cfbf;
-    --danger: #b04a3f;
-    --found-bg: #d9ecc9;
-    --found-border: #7fa869;
-    --found-text: #2f5c26;
-    --missed-bg: #efe9dd;
-    --missed-border: #d9cfbf;
-    --missed-text: #8a8071;
-  }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  body {
-    margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
-    color: var(--text);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    display: flex;
-    justify-content: center;
-    padding: 12px;
-    touch-action: none;
-  }
-
-  .app {
-    width: min(100%, 620px);
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  h1 {
-    margin: 0;
-    text-align: center;
-    font-size: clamp(36px, 10vw, 56px);
-  }
-
-  .subtitle {
-    margin: -4px 0 2px;
-    text-align: center;
-    font-size: 18px;
-    opacity: 0.78;
-  }
-
-  .panel {
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 18px;
-    padding: 12px;
-    box-shadow: 0 5px 16px rgba(50, 40, 30, 0.08);
-  }
-
-  .status {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-    text-align: center;
-    font-size: clamp(17px, 4.5vw, 22px);
-    font-weight: 800;
-  }
-
-  .current-word {
-    min-height: 54px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: clamp(28px, 8vw, 42px);
-    font-weight: 900;
-    letter-spacing: 2px;
-    overflow-wrap: anywhere;
-  }
-
-  .message {
-    min-height: 27px;
-    text-align: center;
-    font-size: 19px;
-    font-weight: 800;
-  }
-
-  .message.ok {
-    color: var(--accent-dark);
-  }
-
-  .message.bad {
-    color: var(--danger);
-  }
-
-  .board {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    user-select: none;
-  }
-
-  .tile {
-    aspect-ratio: 1 / 1;
-    min-height: 68px;
-    border: 3px solid var(--border);
-    border-radius: 17px;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: clamp(42px, 13vw, 68px);
-    line-height: 1;
-    font-weight: 950;
-    cursor: pointer;
-    transition: transform 0.08s ease, background 0.08s ease;
-    touch-action: none;
-  }
-
-  .tile.selected {
-    background: var(--selected);
-    border-color: #c89a3d;
-    transform: scale(0.92);
-  }
-
-  .buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  button {
-    border: 0;
-    border-radius: 14px;
-    padding: 16px 12px;
-    font-size: 20px;
-    font-weight: 900;
-    cursor: pointer;
-  }
-
-  .primary {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .secondary {
-    background: #e7dfd2;
-    color: var(--text);
-  }
-
-  .found-title {
-    margin: 0 0 8px;
-    font-size: 21px;
-  }
-
-  .found-words {
-    min-height: 42px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-  }
-
-  .word-chip {
-    background: #e7efdf;
-    border: 1px solid #b8c9aa;
-    border-radius: 999px;
-    padding: 7px 10px;
-    font-size: 17px;
-    font-weight: 800;
-  }
-
-  .result-overlay {
-    position: fixed;
-    inset: 0;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.55);
-    z-index: 1000;
-    touch-action: auto;
-  }
-
-  .result-overlay.visible {
-    display: flex;
-  }
-
-  .result-card {
-    width: min(100%, 460px);
-    max-height: min(88vh, 720px);
-    overflow-y: auto;
-    background: var(--card);
-    border: 2px solid var(--border);
-    border-radius: 22px;
-    padding: 24px;
-    text-align: center;
-  }
-
-  .result-card h2 {
-    margin: 0 0 16px;
-    font-size: 32px;
-  }
-
-  .result-card p {
-    margin: 12px 0;
-    font-size: 22px;
-    font-weight: 800;
-  }
-
-  .result-card button {
-    width: 100%;
-    margin-top: 12px;
-  }
-
-  .all-words-section {
-    margin-top: 18px;
-    text-align: left;
-  }
-
-  .all-words-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 8px;
-    margin-bottom: 8px;
-  }
-
-  .all-words-title {
-    font-size: 18px;
-    font-weight: 900;
-  }
-
-  .all-words-count {
-    font-size: 15px;
-    font-weight: 700;
-    opacity: 0.7;
-    white-space: nowrap;
-  }
-
-  .legend {
-    display: flex;
-    gap: 14px;
-    font-size: 13px;
-    font-weight: 700;
-    opacity: 0.85;
-    margin-bottom: 10px;
-  }
-
-  .legend span {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    display: inline-block;
-  }
-
-  .legend-dot.found {
-    background: var(--found-border);
-  }
-
-  .legend-dot.missed {
-    background: var(--missed-border);
-  }
-
-  .all-words-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-height: 260px;
-    overflow-y: auto;
-    padding: 4px 2px;
-  }
-
-  .all-word-chip {
-    border-radius: 999px;
-    padding: 6px 10px;
-    font-size: 15px;
-    font-weight: 800;
-    border: 1px solid var(--missed-border);
-  }
-
-  .all-word-chip.found {
-    background: var(--found-bg);
-    border-color: var(--found-border);
-    color: var(--found-text);
-  }
-
-  .all-word-chip.missed {
-    background: var(--missed-bg);
-    border-color: var(--missed-border);
-    color: var(--missed-text);
-  }
-
-  .all-words-empty {
-    font-size: 15px;
-    opacity: 0.7;
-    font-weight: 700;
-    padding: 6px 2px;
-  }
-
-  @media (max-width: 390px) {
     body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      display: flex;
+      justify-content: center;
       padding: 8px;
+      touch-action: none;
+      overflow: hidden;
     }
 
     .app {
-      gap: 9px;
+      width: min(100%, 620px);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100vh;
+    }
+
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: clamp(28px, 8vw, 44px);
+      line-height: 1;
     }
 
     .panel {
-      padding: 9px;
-    }
-
-    .board {
-      gap: 6px;
-    }
-
-    .tile {
-      min-height: 62px;
-      border-radius: 13px;
-      font-size: clamp(40px, 14vw, 58px);
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 8px 12px;
+      box-shadow: 0 3px 10px rgba(50, 40, 30, 0.06);
+      flex-shrink: 0;
     }
 
     .status {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      text-align: center;
+      font-size: clamp(14px, 3.5vw, 18px);
+      font-weight: 800;
+    }
+
+    .status span {
+      font-size: clamp(18px, 5vw, 26px);
+      color: var(--accent-dark);
+    }
+
+    .current-word {
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: clamp(24px, 7vw, 36px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      overflow-wrap: anywhere;
+    }
+
+    .message {
+      min-height: 22px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .message.ok { color: var(--accent-dark); }
+    .message.bad { color: var(--danger); }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      user-select: none;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .tile {
+      aspect-ratio: 1 / 1;
+      border: 3px solid var(--border);
+      border-radius: 14px;
+      background: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: clamp(52px, 16vw, 80px);
+      line-height: 1;
+      font-weight: 950;
+      cursor: pointer;
+      transition: transform 0.06s ease, background 0.06s ease;
+      touch-action: none;
+    }
+
+    .tile.selected {
+      background: var(--selected);
+      border-color: #c89a3d;
+      transform: scale(0.92);
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    button {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 10px;
+      font-size: 18px;
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .secondary {
+      background: #e7dfd2;
+      color: var(--text);
+    }
+
+    .found-panel {
+      flex-shrink: 0;
+      max-height: 80px;
+      overflow: hidden;
+    }
+
+    .found-title {
+      margin: 0 0 4px;
       font-size: 16px;
     }
-  }
 
-</style>
+    .found-words {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      overflow-y: auto;
+      max-height: 50px;
+    }
+
+    .word-chip {
+      background: #e7efdf;
+      border: 1px solid #b8c9aa;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 14px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .result-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 1000;
+      touch-action: auto;
+    }
+
+    .result-overlay.visible {
+      display: flex;
+    }
+
+    .result-card {
+      width: min(100%, 460px);
+      max-height: min(90vh, 720px);
+      overflow-y: auto;
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .result-card h2 {
+      margin: 0 0 12px;
+      font-size: 28px;
+    }
+
+    .result-card p {
+      margin: 8px 0;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .result-card button {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .all-words-section {
+      margin-top: 14px;
+      text-align: left;
+    }
+
+    .all-words-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .all-words-title {
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .all-words-count {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: 0.7;
+    }
+
+    .legend {
+      display: flex;
+      gap: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.85;
+      margin-bottom: 8px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .legend-dot.found { background: var(--found-border); }
+    .legend-dot.missed { background: var(--missed-border); }
+
+    .all-words-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      padding: 2px;
+    }
+
+    .all-word-chip {
+      border-radius: 999px;
+      padding: 5px 9px;
+      font-size: 14px;
+      font-weight: 800;
+      border: 1px solid var(--missed-border);
+    }
+
+    .all-word-chip.found {
+      background: var(--found-bg);
+      border-color: var(--found-border);
+      color: var(--found-text);
+    }
+
+    .all-word-chip.missed {
+      background: var(--missed-bg);
+      border-color: var(--missed-border);
+      color: var(--missed-text);
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      z-index: 2000;
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 390px) {
+      body { padding: 6px; }
+      .app { gap: 6px; }
+      .panel { padding: 6px 10px; }
+      .board { gap: 5px; }
+      .tile {
+        border-radius: 12px;
+        font-size: clamp(48px, 16vw, 64px);
+      }
+      .status { font-size: 14px; }
+      button { padding: 10px 8px; font-size: 16px; }
+    }
+  </style>
+  <base target="_blank">
+</head>
+
 <body>
+<div id="loadingScreen" class="loading">
+  <div class="spinner"></div>
+  <div>Зареждане на речника...</div>
+</div>
+
 <main class="app">
   <header>
     <h1>Думино</h1>
-    <p class="subtitle">Свързвай буквите с пръст</p>
   </header>
 
   <section class="panel status">
@@ -358,8 +368,12 @@
     <div>Време<br><span id="timer">1:30</span></div>
   </section>
 
-
   <section class="panel">
+    <div id="currentWord" class="current-word"></div>
+    <div id="message" class="message"></div>
+  </section>
+
+  <section class="panel" style="flex:1; display:flex; flex-direction:column; min-height:0;">
     <div id="board" class="board" aria-label="Поле с букви"></div>
   </section>
 
@@ -368,7 +382,7 @@
     <button id="newBtn" class="primary">Нова игра</button>
   </section>
 
-  <section class="panel">
+  <section class="panel found-panel">
     <h2 class="found-title">Намерени думи</h2>
     <div id="foundWords" class="found-words"></div>
   </section>
@@ -412,6 +426,7 @@
   let dictionary = new Set();
   let shortWords = [];
   let trieRoot = null;
+  let allPossibleWordsCache = new Set();
 
   let letters = [];
   let selected = [];
@@ -421,6 +436,7 @@
   let timeLeft = ROUND_SECONDS;
   let timerInterval = null;
   let roundFinished = false;
+  let worker = null;
 
   const boardEl = document.getElementById("board");
   const currentWordEl = document.getElementById("currentWord");
@@ -431,6 +447,7 @@
   const foundWordsEl = document.getElementById("foundWords");
   const clearBtn = document.getElementById("clearBtn");
   const newBtn = document.getElementById("newBtn");
+  const loadingScreen = document.getElementById("loadingScreen");
 
   const resultOverlayEl = document.getElementById("resultOverlay");
   const resultCountEl = document.getElementById("resultCount");
@@ -441,43 +458,117 @@
   const allWordsFoundCountEl = document.getElementById("allWordsFoundCount");
   const allWordsTotalCountEl = document.getElementById("allWordsTotalCount");
 
-  async function loadDictionary() {
-    const response = await fetch("words.txt");
+  const workerCode = `
+    self.onmessage = function(e) {
+      const { letters, trieRoot, action } = e.data;
 
-    if (!response.ok) {
-      throw new Error("Речникът не се зареди.");
+      if (action === 'findAll') {
+        const words = findAllPossibleWords(letters, trieRoot);
+        self.postMessage({ type: 'allWords', words: [...words] });
+      }
+    };
+
+    function findAllPossibleWords(letters, trieRoot) {
+      const CELL_COUNT = 16;
+      const BOARD_SIZE = 4;
+      const found = new Set();
+
+      function rowOf(index) { return Math.floor(index / BOARD_SIZE); }
+      function colOf(index) { return index % BOARD_SIZE; }
+
+      function neighboursOf(index) {
+        const result = [];
+        for (let r = -1; r <= 1; r++) {
+          for (let c = -1; c <= 1; c++) {
+            if (r === 0 && c === 0) continue;
+            const row = rowOf(index) + r;
+            const col = colOf(index) + c;
+            if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
+              result.push(row * BOARD_SIZE + col);
+            }
+          }
+        }
+        return result;
+      }
+
+      const visited = new Array(CELL_COUNT).fill(false);
+      const wordChars = [];
+
+      function dfs(index, node) {
+        const letter = letters[index].toLowerCase();
+        const nextNode = node[letter];
+        if (!nextNode) return;
+
+        wordChars.push(letter);
+        visited[index] = true;
+
+        if (nextNode.isWord && wordChars.length >= 3) {
+          found.add(wordChars.join(""));
+        }
+
+        for (const neighbour of neighboursOf(index)) {
+          if (!visited[neighbour]) {
+            dfs(neighbour, nextNode);
+          }
+        }
+
+        visited[index] = false;
+        wordChars.pop();
+      }
+
+      for (let i = 0; i < CELL_COUNT; i++) {
+        dfs(i, trieRoot);
+      }
+
+      return found;
     }
+  `;
 
-    const text = await response.text();
+  function initWorker() {
+    const blob = new Blob([workerCode], { type: 'application/javascript' });
+    worker = new Worker(URL.createObjectURL(blob));
+    worker.onmessage = function(e) {
+      if (e.data.type === 'allWords') {
+        allPossibleWordsCache = new Set(e.data.words);
+      }
+    };
+  }
 
-    const words = text
-      .split(/\r?\n/)
-      .map(word => word.trim().toLocaleLowerCase("bg-BG"))
-      .filter(word => /^[а-я]+$/u.test(word))
-      .filter(word => word.length >= 3);
+  async function loadDictionary() {
+    try {
+      const response = await fetch("words.txt");
+      if (!response.ok) throw new Error("Речникът не се зареди.");
 
-    dictionary = new Set(words);
-    shortWords = words.filter(word => word.length >= 3 && word.length <= 5);
-    trieRoot = buildTrie(words);
+      const text = await response.text();
+      const words = text
+        .split(/\r?\n/)
+        .map(w => w.trim().toLowerCase())
+        .filter(w => /^[а-я]+$/u.test(w))
+        .filter(w => w.length >= 3);
+
+      dictionary = new Set(words);
+      shortWords = words.filter(w => w.length >= 3 && w.length <= 5);
+      trieRoot = buildTrie(words);
+      initWorker();
+
+      loadingScreen.style.display = 'none';
+      startNewRound();
+    } catch (err) {
+      console.error(err);
+      loadingScreen.innerHTML = '<div>Грешка при зареждане на речника</div>';
+    }
   }
 
   function buildTrie(words) {
     const root = {};
-
     for (const word of words) {
       let node = root;
-
       for (const letter of word) {
-        if (!node[letter]) {
-          node[letter] = {};
-        }
-
+        if (!node[letter]) node[letter] = {};
         node = node[letter];
       }
-
       node.isWord = true;
     }
-
     return root;
   }
 
@@ -487,39 +578,28 @@
 
   function shuffled(array) {
     const copy = [...array];
-
     for (let i = copy.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [copy[i], copy[j]] = [copy[j], copy[i]];
     }
-
     return copy;
   }
 
-  function rowOf(index) {
-    return Math.floor(index / BOARD_SIZE);
-  }
-
-  function colOf(index) {
-    return index % BOARD_SIZE;
-  }
+  function rowOf(index) { return Math.floor(index / BOARD_SIZE); }
+  function colOf(index) { return index % BOARD_SIZE; }
 
   function neighboursOf(index) {
     const result = [];
-
-    for (let rowOffset = -1; rowOffset <= 1; rowOffset++) {
-      for (let colOffset = -1; colOffset <= 1; colOffset++) {
-        if (rowOffset === 0 && colOffset === 0) continue;
-
-        const row = rowOf(index) + rowOffset;
-        const col = colOf(index) + colOffset;
-
+    for (let r = -1; r <= 1; r++) {
+      for (let c = -1; c <= 1; c++) {
+        if (r === 0 && c === 0) continue;
+        const row = rowOf(index) + r;
+        const col = colOf(index) + c;
         if (row >= 0 && row < BOARD_SIZE && col >= 0 && col < BOARD_SIZE) {
           result.push(row * BOARD_SIZE + col);
         }
       }
     }
-
     return result;
   }
 
@@ -528,98 +608,212 @@
       const path = [];
       const used = new Set();
       let current = Math.floor(Math.random() * CELL_COUNT);
-
       path.push(current);
       used.add(current);
 
       while (path.length < length) {
-        const options = shuffled(neighboursOf(current))
-          .filter(index => !used.has(index));
-
+        const options = shuffled(neighboursOf(current)).filter(i => !used.has(i));
         if (options.length === 0) break;
-
         current = options[0];
         path.push(current);
         used.add(current);
       }
 
-      if (path.length === length) {
-        return path;
-      }
+      if (path.length === length) return path;
     }
-
     return null;
   }
 
   function generateBoard() {
     const board = Array.from({ length: CELL_COUNT }, randomLetter);
-
-    if (shortWords.length === 0) {
-      return board;
-    }
+    if (shortWords.length === 0) return board;
 
     const chosen = shuffled(shortWords).slice(0, 7);
-
     for (const word of chosen) {
       const path = findSimplePath(word.length);
-
       if (!path) continue;
-
-      const upperWord = word.toLocaleUpperCase("bg-BG");
-
+      const upperWord = word.toUpperCase();
       path.forEach((cellIndex, letterIndex) => {
         board[cellIndex] = upperWord[letterIndex];
       });
     }
-
     return board;
   }
 
-  // Намира всички думи от речника, които могат да се съставят на
-  // текущото табло, като се движим между съседни (включително по диагонал)
-  // плочки, без да минаваме два пъти през една и съща плочка.
-  function findAllPossibleWords() {
-    const found = new Set();
+  function createBoard() {
+    letters = generateBoard();
+    selected = [];
+    dragging = false;
+    boardEl.innerHTML = "";
+    clearMessage();
 
-    if (!trieRoot) {
-      return found;
+    letters.forEach((letter, index) => {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      tile.textContent = letter;
+      tile.dataset.index = index;
+
+      tile.addEventListener("pointerdown", event => {
+        if (roundFinished) return;
+        event.preventDefault();
+        tile.setPointerCapture(event.pointerId);
+        dragging = true;
+        selected = [];
+        addTile(index);
+      });
+
+      tile.addEventListener("pointerenter", event => {
+        if (!dragging || roundFinished) return;
+        addTile(index);
+      });
+
+      tile.addEventListener("pointerup", event => {
+        if (dragging) finishWord();
+      });
+
+      boardEl.appendChild(tile);
+    });
+
+    updateCurrentWord();
+
+    if (worker) {
+      worker.postMessage({
+        action: 'findAll',
+        letters: letters,
+        trieRoot: trieRoot
+      });
+    }
+  }
+
+  function areAdjacent(a, b) {
+    const rowDiff = Math.abs(rowOf(a) - rowOf(b));
+    const colDiff = Math.abs(colOf(a) - colOf(b));
+    return rowDiff <= 1 && colDiff <= 1 && !(rowDiff === 0 && colDiff === 0);
+  }
+
+  function addTile(index) {
+    if (selected.includes(index)) return;
+    if (selected.length > 0) {
+      const previous = selected[selected.length - 1];
+      if (!areAdjacent(previous, index)) return;
+    }
+    selected.push(index);
+    renderSelection();
+    updateCurrentWord();
+  }
+
+  function renderSelection() {
+    [...boardEl.children].forEach((tile, index) => {
+      tile.classList.toggle("selected", selected.includes(index));
+    });
+  }
+
+  function currentWord() {
+    return selected.map(index => letters[index]).join("").toLowerCase();
+  }
+
+  function updateCurrentWord() {
+    const word = currentWord();
+    currentWordEl.textContent = word ? word.toUpperCase() : "";
+  }
+
+  function finishWord() {
+    if (!dragging || roundFinished) return;
+    dragging = false;
+    const word = currentWord();
+
+    if (word.length < 3) {
+      showMessage("Минимум 3 букви", false);
+    } else if (foundWords.has(word)) {
+      showMessage("Вече намерена", false);
+    } else if (dictionary.has(word)) {
+      foundWords.add(word);
+      const gained = word.length * word.length;
+      score += gained;
+      scoreEl.textContent = score;
+      wordCountEl.textContent = foundWords.size;
+
+      const chip = document.createElement("span");
+      chip.className = "word-chip";
+      chip.textContent = word.toUpperCase();
+      foundWordsEl.prepend(chip);
+
+      showMessage("+" + gained + " точки", true);
+    } else {
+      showMessage("Няма такава дума", false);
     }
 
-    const visited = new Array(CELL_COUNT).fill(false);
-    const wordChars = [];
+    selected = [];
+    renderSelection();
+    updateCurrentWord();
+  }
 
-    function dfs(index, node) {
-      const letter = letters[index].toLocaleLowerCase("bg-BG");
-      const nextNode = node[letter];
+  function clearSelection() {
+    dragging = false;
+    selected = [];
+    renderSelection();
+    updateCurrentWord();
+    clearMessage();
+  }
 
-      if (!nextNode) return;
+  function updateTimer() {
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    timerEl.textContent = minutes + ":" + String(seconds).padStart(2, "0");
+  }
 
-      wordChars.push(letter);
-      visited[index] = true;
+  function startTimer() {
+    clearInterval(timerInterval);
+    timeLeft = ROUND_SECONDS;
+    updateTimer();
 
-      if (nextNode.isWord && wordChars.length >= 3) {
-        found.add(wordChars.join(""));
-      }
+    timerInterval = setInterval(() => {
+      timeLeft--;
+      updateTimer();
+      if (timeLeft <= 0) finishRound();
+    }, 1000);
+  }
 
-      for (const neighbour of neighboursOf(index)) {
-        if (!visited[neighbour]) {
-          dfs(neighbour, nextNode);
-        }
-      }
+  function startNewRound() {
+    clearInterval(timerInterval);
+    roundFinished = false;
+    score = 0;
+    foundWords = new Set();
+    selected = [];
+    dragging = false;
+    allPossibleWordsCache = new Set();
 
-      visited[index] = false;
-      wordChars.pop();
-    }
+    scoreEl.textContent = "0";
+    wordCountEl.textContent = "0";
+    foundWordsEl.innerHTML = "";
+    resultOverlayEl.classList.remove("visible");
 
-    for (let i = 0; i < CELL_COUNT; i++) {
-      dfs(i, trieRoot);
-    }
+    createBoard();
+    startTimer();
+  }
 
-    return found;
+  function finishRound() {
+    if (roundFinished) return;
+    roundFinished = true;
+    dragging = false;
+    clearInterval(timerInterval);
+    timeLeft = 0;
+    updateTimer();
+
+    const words = [...foundWords];
+    const longestWord = words.reduce((longest, word) =>
+      word.length > longest.length ? word : longest, "");
+
+    resultCountEl.textContent = words.length;
+    resultLongestEl.textContent = longestWord ? longestWord.toUpperCase() : "Няма";
+    resultScoreEl.textContent = score;
+
+    renderAllWords();
+    resultOverlayEl.classList.add("visible");
   }
 
   function renderAllWords() {
-    const allWords = [...findAllPossibleWords()].sort((a, b) => {
+    const allWords = [...allPossibleWordsCache].sort((a, b) => {
       if (a.length !== b.length) return b.length - a.length;
       return a.localeCompare(b, "bg-BG");
     });
@@ -640,211 +834,17 @@
       const wasFound = foundWords.has(word);
       const chip = document.createElement("span");
       chip.className = "all-word-chip " + (wasFound ? "found" : "missed");
-      chip.textContent = word.toLocaleUpperCase("bg-BG");
+      chip.textContent = word.toUpperCase();
       allWordsListEl.appendChild(chip);
     });
-  }
-
-  function createBoard() {
-    letters = generateBoard();
-    selected = [];
-    dragging = false;
-    boardEl.innerHTML = "";
-    clearMessage();
-
-    letters.forEach((letter, index) => {
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.textContent = letter;
-      tile.dataset.index = index;
-
-      tile.addEventListener("pointerdown", event => {
-        if (roundFinished) return;
-
-        event.preventDefault();
-        dragging = true;
-        selected = [];
-        addTile(index);
-      });
-
-      tile.addEventListener("pointermove", event => {
-        if (!dragging || roundFinished) return;
-
-        const element = document.elementFromPoint(
-          event.clientX,
-          event.clientY
-        );
-
-        const targetTile = element && element.closest(".tile");
-
-        if (targetTile) {
-          addTile(Number(targetTile.dataset.index));
-        }
-      });
-
-      boardEl.appendChild(tile);
-    });
-
-    updateCurrentWord();
-  }
-
-  function areAdjacent(a, b) {
-    const rowDiff = Math.abs(rowOf(a) - rowOf(b));
-    const colDiff = Math.abs(colOf(a) - colOf(b));
-
-    return rowDiff <= 1 &&
-           colDiff <= 1 &&
-           !(rowDiff === 0 && colDiff === 0);
-  }
-
-  function addTile(index) {
-    if (selected.includes(index)) return;
-
-    if (selected.length > 0) {
-      const previous = selected[selected.length - 1];
-
-      if (!areAdjacent(previous, index)) return;
-    }
-
-    selected.push(index);
-    renderSelection();
-    updateCurrentWord();
-  }
-
-  function renderSelection() {
-    [...boardEl.children].forEach((tile, index) => {
-      tile.classList.toggle("selected", selected.includes(index));
-    });
-  }
-
-  function currentWord() {
-    return selected
-      .map(index => letters[index])
-      .join("")
-      .toLocaleLowerCase("bg-BG");
-  }
-
-  function updateCurrentWord() {
-    const word = currentWord();
-
-    currentWordEl.textContent = word
-      ? word.toLocaleUpperCase("bg-BG")
-      : "Плъзни през буквите";
-  }
-
-  function finishWord() {
-    if (!dragging || roundFinished) return;
-
-    dragging = false;
-    const word = currentWord();
-
-    if (word.length < 3) {
-      showMessage("Думата трябва да е поне 3 букви.", false);
-    } else if (foundWords.has(word)) {
-      showMessage("Тази дума вече е намерена.", false);
-    } else if (dictionary.has(word)) {
-      foundWords.add(word);
-
-      const gained = word.length * word.length;
-      score += gained;
-
-      scoreEl.textContent = score;
-      wordCountEl.textContent = foundWords.size;
-
-      const chip = document.createElement("span");
-      chip.className = "word-chip";
-      chip.textContent = word.toLocaleUpperCase("bg-BG");
-      foundWordsEl.prepend(chip);
-
-      showMessage("Браво! +" + gained + " точки", true);
-    } else {
-      showMessage("Не намирам такава дума.", false);
-    }
-
-    selected = [];
-    renderSelection();
-    updateCurrentWord();
-  }
-
-  function clearSelection() {
-    dragging = false;
-    selected = [];
-    renderSelection();
-    updateCurrentWord();
-    clearMessage();
-  }
-
-  function updateTimer() {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-
-    timerEl.textContent =
-      minutes + ":" + String(seconds).padStart(2, "0");
-  }
-
-  function startTimer() {
-    clearInterval(timerInterval);
-    timeLeft = ROUND_SECONDS;
-    updateTimer();
-
-    timerInterval = setInterval(() => {
-      timeLeft--;
-      updateTimer();
-
-      if (timeLeft <= 0) {
-        finishRound();
-      }
-    }, 1000);
-  }
-
-  function startNewRound() {
-    clearInterval(timerInterval);
-
-    roundFinished = false;
-    score = 0;
-    foundWords = new Set();
-    selected = [];
-    dragging = false;
-
-    scoreEl.textContent = "0";
-    wordCountEl.textContent = "0";
-    foundWordsEl.innerHTML = "";
-    resultOverlayEl.classList.remove("visible");
-
-    createBoard();
-    startTimer();
-  }
-
-  function finishRound() {
-    if (roundFinished) return;
-
-    roundFinished = true;
-    dragging = false;
-    clearInterval(timerInterval);
-    timeLeft = 0;
-    updateTimer();
-
-    const words = [...foundWords];
-    const longestWord = words.reduce(
-      (longest, word) =>
-        word.length > longest.length ? word : longest,
-      ""
-    );
-
-    resultCountEl.textContent = words.length;
-    resultLongestEl.textContent = longestWord
-      ? longestWord.toLocaleUpperCase("bg-BG")
-      : "Няма";
-    resultScoreEl.textContent = score;
-
-    renderAllWords();
-
-    resultOverlayEl.classList.add("visible");
   }
 
   function showMessage(text, ok) {
     messageEl.textContent = text;
     messageEl.className = "message " + (ok ? "ok" : "bad");
+    setTimeout(() => {
+      if (messageEl.textContent === text) clearMessage();
+    }, 1500);
   }
 
   function clearMessage() {
@@ -852,20 +852,11 @@
     messageEl.className = "message";
   }
 
-  document.addEventListener("pointerup", finishWord);
-  document.addEventListener("pointercancel", clearSelection);
-
   clearBtn.addEventListener("click", clearSelection);
   newBtn.addEventListener("click", startNewRound);
   playAgainBtn.addEventListener("click", startNewRound);
 
-  loadDictionary()
-    .then(startNewRound)
-    .catch(error => {
-      console.error(error);
-      startNewRound();
-      showMessage("Речникът не се зареди.", false);
-    });
+  loadDictionary();
 </script>
 </body>
 </html>
