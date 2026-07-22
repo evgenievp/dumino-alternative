@@ -24,10 +24,7 @@
       --missed-text: #8a8071;
     }
 
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
     body {
       margin: 0;
@@ -137,20 +134,10 @@
       cursor: pointer;
     }
 
-    .primary {
-      background: var(--accent);
-      color: #fff;
-    }
+    .primary { background: var(--accent); color: #fff; }
+    .secondary { background: #e7dfd2; color: var(--text); }
 
-    .secondary {
-      background: #e7dfd2;
-      color: var(--text);
-    }
-
-    .found-title {
-      margin: 0 0 8px;
-      font-size: 21px;
-    }
+    .found-title { margin: 0 0 8px; font-size: 21px; }
 
     .found-words {
       min-height: 42px;
@@ -180,9 +167,7 @@
       touch-action: auto;
     }
 
-    .result-overlay.visible {
-      display: flex;
-    }
+    .result-overlay.visible { display: flex; }
 
     .result-card {
       width: min(100%, 460px);
@@ -195,21 +180,10 @@
       text-align: center;
     }
 
-    .result-card h2 {
-      margin: 0 0 16px;
-      font-size: 32px;
-    }
+    .result-card h2 { margin: 0 0 16px; font-size: 32px; }
+    .result-card p { margin: 12px 0; font-size: 22px; font-weight: 800; }
 
-    .result-card p {
-      margin: 12px 0;
-      font-size: 22px;
-      font-weight: 800;
-    }
-
-    .all-words-section {
-      margin-top: 18px;
-      text-align: left;
-    }
+    .all-words-section { margin-top: 18px; text-align: left; }
 
     .all-words-header {
       display: flex;
@@ -219,17 +193,8 @@
       margin-bottom: 8px;
     }
 
-    .all-words-title {
-      font-size: 18px;
-      font-weight: 900;
-    }
-
-    .all-words-count {
-      font-size: 15px;
-      font-weight: 700;
-      opacity: 0.7;
-      white-space: nowrap;
-    }
+    .all-words-title { font-size: 18px; font-weight: 900; }
+    .all-words-count { font-size: 15px; font-weight: 700; opacity: 0.7; white-space: nowrap; }
 
     .legend {
       display: flex;
@@ -240,11 +205,7 @@
       margin-bottom: 10px;
     }
 
-    .legend span {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-    }
+    .legend span { display: inline-flex; align-items: center; gap: 5px; }
 
     .legend-dot {
       width: 10px;
@@ -290,12 +251,7 @@
       100% { transform: scale(1); }
     }
 
-    .all-words-empty {
-      font-size: 15px;
-      opacity: 0.7;
-      font-weight: 700;
-      padding: 6px 2px;
-    }
+    .all-words-empty { font-size: 15px; opacity: 0.7; font-weight: 700; padding: 6px 2px; }
 
     .auto-start-timer {
       margin-top: 16px;
@@ -327,20 +283,14 @@
       animation: spin 1s linear infinite;
     }
 
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
     @media (max-width: 390px) {
       body { padding: 8px; }
       .app { gap: 9px; }
       .panel { padding: 9px; }
       .board { gap: 6px; }
-      .tile {
-        min-height: 62px;
-        border-radius: 13px;
-        font-size: clamp(40px, 14vw, 58px);
-      }
+      .tile { min-height: 62px; border-radius: 13px; font-size: clamp(40px, 14vw, 58px); }
       .status { font-size: 16px; }
     }
   </style>
@@ -354,9 +304,7 @@
 </div>
 
 <main class="app">
-  <header>
-    <h1>Думино</h1>
-  </header>
+  <header><h1>Думино</h1></header>
 
   <section class="panel status">
     <div>Точки<br><span id="score">0</span></div>
@@ -456,10 +404,17 @@
   const allWordsFoundCountEl = document.getElementById("allWordsFoundCount");
   const allWordsTotalCountEl = document.getElementById("allWordsTotalCount");
 
+  // Функция за преобразуване на български букви в малки
+  // Речникът трябва да е с малки букви!
+  function bgLower(str) {
+    return str.replace(/[А-Я]/g, function(ch) {
+      return String.fromCharCode(ch.charCodeAt(0) + 32);
+    });
+  }
+
   const workerCode = `
     self.onmessage = function(e) {
       const { letters, trieRoot, action } = e.data;
-
       if (action === 'findAll') {
         const words = findAllPossibleWords(letters, trieRoot);
         self.postMessage({ type: 'allWords', words: [...words] });
@@ -540,13 +495,15 @@
       const text = await response.text();
       const words = text
         .split(/\r?\n/)
-        .map(w => w.trim().toLowerCase())
-        .filter(w => /^[а-я]+$/u.test(w))
+        .map(w => w.trim())
         .filter(w => w.length >= 3);
 
-      dictionary = new Set(words);
-      shortWords = words.filter(w => w.length >= 3 && w.length <= 5);
-      trieRoot = buildTrie(words);
+      // Приемаме че речникът е с малки букви, но ако не е - конвертираме
+      const lowerWords = words.map(w => bgLower(w));
+
+      dictionary = new Set(lowerWords);
+      shortWords = lowerWords.filter(w => w.length >= 3 && w.length <= 5);
+      trieRoot = buildTrie(lowerWords);
       initWorker();
 
       loadingScreen.style.display = 'none';
@@ -710,7 +667,6 @@
     dragging = false;
     const word = currentWord();
 
-    // Махаме съобщението за къса дума - просто не правим нищо
     if (word.length < 3) {
       selected = [];
       renderSelection();
