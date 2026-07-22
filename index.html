@@ -37,64 +37,55 @@
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       display: flex;
       justify-content: center;
-      padding: 8px;
+      padding: 12px;
       touch-action: none;
-      overflow: hidden;
     }
 
     .app {
       width: min(100%, 620px);
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      height: 100vh;
+      gap: 12px;
     }
 
     h1 {
       margin: 0;
       text-align: center;
-      font-size: clamp(28px, 8vw, 44px);
-      line-height: 1;
+      font-size: clamp(36px, 10vw, 56px);
     }
 
     .panel {
       background: var(--card);
       border: 2px solid var(--border);
-      border-radius: 14px;
-      padding: 8px 12px;
-      box-shadow: 0 3px 10px rgba(50, 40, 30, 0.06);
-      flex-shrink: 0;
+      border-radius: 18px;
+      padding: 12px;
+      box-shadow: 0 5px 16px rgba(50, 40, 30, 0.08);
     }
 
     .status {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 6px;
+      gap: 8px;
       text-align: center;
-      font-size: clamp(14px, 3.5vw, 18px);
+      font-size: clamp(17px, 4.5vw, 22px);
       font-weight: 800;
     }
 
-    .status span {
-      font-size: clamp(18px, 5vw, 26px);
-      color: var(--accent-dark);
-    }
-
     .current-word {
-      min-height: 44px;
+      min-height: 54px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: clamp(24px, 7vw, 36px);
+      font-size: clamp(28px, 8vw, 42px);
       font-weight: 900;
       letter-spacing: 2px;
       overflow-wrap: anywhere;
     }
 
     .message {
-      min-height: 22px;
+      min-height: 27px;
       text-align: center;
-      font-size: 16px;
+      font-size: 19px;
       font-weight: 800;
     }
 
@@ -104,25 +95,24 @@
     .board {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      gap: 8px;
       user-select: none;
-      flex: 1;
-      min-height: 0;
     }
 
     .tile {
       aspect-ratio: 1 / 1;
+      min-height: 68px;
       border: 3px solid var(--border);
-      border-radius: 14px;
+      border-radius: 17px;
       background: #fff;
       display: flex;
       justify-content: center;
       align-items: center;
-      font-size: clamp(52px, 16vw, 80px);
+      font-size: clamp(42px, 13vw, 68px);
       line-height: 1;
       font-weight: 950;
       cursor: pointer;
-      transition: transform 0.06s ease, background 0.06s ease;
+      transition: transform 0.08s ease, background 0.08s ease;
       touch-action: none;
     }
 
@@ -135,15 +125,14 @@
     .buttons {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      flex-shrink: 0;
+      gap: 10px;
     }
 
     button {
       border: 0;
-      border-radius: 12px;
-      padding: 12px 10px;
-      font-size: 18px;
+      border-radius: 14px;
+      padding: 16px 12px;
+      font-size: 20px;
       font-weight: 900;
       cursor: pointer;
     }
@@ -158,33 +147,25 @@
       color: var(--text);
     }
 
-    .found-panel {
-      flex-shrink: 0;
-      max-height: 80px;
-      overflow: hidden;
-    }
-
     .found-title {
-      margin: 0 0 4px;
-      font-size: 16px;
+      margin: 0 0 8px;
+      font-size: 21px;
     }
 
     .found-words {
+      min-height: 42px;
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
-      overflow-y: auto;
-      max-height: 50px;
+      gap: 7px;
     }
 
     .word-chip {
       background: #e7efdf;
       border: 1px solid #b8c9aa;
       border-radius: 999px;
-      padding: 4px 8px;
-      font-size: 14px;
+      padding: 7px 10px;
+      font-size: 17px;
       font-weight: 800;
-      flex-shrink: 0;
     }
 
     .result-overlay {
@@ -193,7 +174,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 20px;
       background: rgba(0, 0, 0, 0.55);
       z-index: 1000;
       touch-action: auto;
@@ -205,33 +186,28 @@
 
     .result-card {
       width: min(100%, 460px);
-      max-height: min(90vh, 720px);
+      max-height: min(88vh, 720px);
       overflow-y: auto;
       background: var(--card);
       border: 2px solid var(--border);
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 22px;
+      padding: 24px;
       text-align: center;
     }
 
     .result-card h2 {
-      margin: 0 0 12px;
-      font-size: 28px;
+      margin: 0 0 16px;
+      font-size: 32px;
     }
 
     .result-card p {
-      margin: 8px 0;
-      font-size: 20px;
+      margin: 12px 0;
+      font-size: 22px;
       font-weight: 800;
     }
 
-    .result-card button {
-      width: 100%;
-      margin-top: 10px;
-    }
-
     .all-words-section {
-      margin-top: 14px;
+      margin-top: 18px;
       text-align: left;
     }
 
@@ -240,38 +216,39 @@
       justify-content: space-between;
       align-items: baseline;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
     }
 
     .all-words-title {
-      font-size: 16px;
+      font-size: 18px;
       font-weight: 900;
     }
 
     .all-words-count {
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 700;
       opacity: 0.7;
+      white-space: nowrap;
     }
 
     .legend {
       display: flex;
-      gap: 12px;
-      font-size: 12px;
+      gap: 14px;
+      font-size: 13px;
       font-weight: 700;
       opacity: 0.85;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
 
     .legend span {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
     }
 
     .legend-dot {
-      width: 9px;
-      height: 9px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       display: inline-block;
     }
@@ -282,30 +259,49 @@
     .all-words-list {
       display: flex;
       flex-wrap: wrap;
-      gap: 5px;
-      max-height: 200px;
+      gap: 6px;
+      max-height: 260px;
       overflow-y: auto;
-      padding: 2px;
+      padding: 4px 2px;
     }
 
     .all-word-chip {
       border-radius: 999px;
-      padding: 5px 9px;
-      font-size: 14px;
+      padding: 6px 10px;
+      font-size: 15px;
       font-weight: 800;
       border: 1px solid var(--missed-border);
+      background: var(--missed-bg);
+      color: var(--missed-text);
+      transition: all 0.3s ease;
     }
 
     .all-word-chip.found {
       background: var(--found-bg);
       border-color: var(--found-border);
       color: var(--found-text);
+      box-shadow: 0 0 8px rgba(127, 168, 105, 0.4);
+      animation: pulse 1.5s ease-in-out;
     }
 
-    .all-word-chip.missed {
-      background: var(--missed-bg);
-      border-color: var(--missed-border);
-      color: var(--missed-text);
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1); }
+    }
+
+    .all-words-empty {
+      font-size: 15px;
+      opacity: 0.7;
+      font-weight: 700;
+      padding: 6px 2px;
+    }
+
+    .auto-start-timer {
+      margin-top: 16px;
+      font-size: 18px;
+      color: var(--accent-dark);
+      font-weight: 800;
     }
 
     .loading {
@@ -336,16 +332,16 @@
     }
 
     @media (max-width: 390px) {
-      body { padding: 6px; }
-      .app { gap: 6px; }
-      .panel { padding: 6px 10px; }
-      .board { gap: 5px; }
+      body { padding: 8px; }
+      .app { gap: 9px; }
+      .panel { padding: 9px; }
+      .board { gap: 6px; }
       .tile {
-        border-radius: 12px;
-        font-size: clamp(48px, 16vw, 64px);
+        min-height: 62px;
+        border-radius: 13px;
+        font-size: clamp(40px, 14vw, 58px);
       }
-      .status { font-size: 14px; }
-      button { padding: 10px 8px; font-size: 16px; }
+      .status { font-size: 16px; }
     }
   </style>
   <base target="_blank">
@@ -373,7 +369,7 @@
     <div id="message" class="message"></div>
   </section>
 
-  <section class="panel" style="flex:1; display:flex; flex-direction:column; min-height:0;">
+  <section class="panel">
     <div id="board" class="board" aria-label="Поле с букви"></div>
   </section>
 
@@ -382,7 +378,7 @@
     <button id="newBtn" class="primary">Нова игра</button>
   </section>
 
-  <section class="panel found-panel">
+  <section class="panel">
     <h2 class="found-title">Намерени думи</h2>
     <div id="foundWords" class="found-words"></div>
   </section>
@@ -407,7 +403,7 @@
       <div id="allWordsList" class="all-words-list"></div>
     </div>
 
-    <button id="playAgainBtn" class="primary">Играй отново</button>
+    <div id="autoStartTimer" class="auto-start-timer">Нова игра след 10 секунди...</div>
   </div>
 </div>
 
@@ -415,6 +411,7 @@
   const ROUND_SECONDS = 90;
   const BOARD_SIZE = 4;
   const CELL_COUNT = 16;
+  const AUTO_START_DELAY = 10;
 
   const commonLetters = [
     "А","А","А","А","Е","Е","Е","Е","И","И","И","О","О","О",
@@ -437,6 +434,7 @@
   let timerInterval = null;
   let roundFinished = false;
   let worker = null;
+  let autoStartInterval = null;
 
   const boardEl = document.getElementById("board");
   const currentWordEl = document.getElementById("currentWord");
@@ -448,12 +446,12 @@
   const clearBtn = document.getElementById("clearBtn");
   const newBtn = document.getElementById("newBtn");
   const loadingScreen = document.getElementById("loadingScreen");
+  const autoStartTimerEl = document.getElementById("autoStartTimer");
 
   const resultOverlayEl = document.getElementById("resultOverlay");
   const resultCountEl = document.getElementById("resultCount");
   const resultLongestEl = document.getElementById("resultLongest");
   const resultScoreEl = document.getElementById("resultScore");
-  const playAgainBtn = document.getElementById("playAgainBtn");
   const allWordsListEl = document.getElementById("allWordsList");
   const allWordsFoundCountEl = document.getElementById("allWordsFoundCount");
   const allWordsTotalCountEl = document.getElementById("allWordsTotalCount");
@@ -656,19 +654,9 @@
       tile.addEventListener("pointerdown", event => {
         if (roundFinished) return;
         event.preventDefault();
-        tile.setPointerCapture(event.pointerId);
         dragging = true;
         selected = [];
         addTile(index);
-      });
-
-      tile.addEventListener("pointerenter", event => {
-        if (!dragging || roundFinished) return;
-        addTile(index);
-      });
-
-      tile.addEventListener("pointerup", event => {
-        if (dragging) finishWord();
       });
 
       boardEl.appendChild(tile);
@@ -722,9 +710,15 @@
     dragging = false;
     const word = currentWord();
 
+    // Махаме съобщението за къса дума - просто не правим нищо
     if (word.length < 3) {
-      showMessage("Минимум 3 букви", false);
-    } else if (foundWords.has(word)) {
+      selected = [];
+      renderSelection();
+      updateCurrentWord();
+      return;
+    }
+
+    if (foundWords.has(word)) {
       showMessage("Вече намерена", false);
     } else if (dictionary.has(word)) {
       foundWords.add(word);
@@ -776,6 +770,7 @@
 
   function startNewRound() {
     clearInterval(timerInterval);
+    clearInterval(autoStartInterval);
     roundFinished = false;
     score = 0;
     foundWords = new Set();
@@ -787,6 +782,7 @@
     wordCountEl.textContent = "0";
     foundWordsEl.innerHTML = "";
     resultOverlayEl.classList.remove("visible");
+    autoStartTimerEl.textContent = "Нова игра след " + AUTO_START_DELAY + " секунди...";
 
     createBoard();
     startTimer();
@@ -810,6 +806,19 @@
 
     renderAllWords();
     resultOverlayEl.classList.add("visible");
+
+    let secondsLeft = AUTO_START_DELAY;
+    autoStartTimerEl.textContent = "Нова игра след " + secondsLeft + " секунди...";
+
+    autoStartInterval = setInterval(() => {
+      secondsLeft--;
+      if (secondsLeft > 0) {
+        autoStartTimerEl.textContent = "Нова игра след " + secondsLeft + " секунди...";
+      } else {
+        clearInterval(autoStartInterval);
+        startNewRound();
+      }
+    }, 1000);
   }
 
   function renderAllWords() {
@@ -852,9 +861,23 @@
     messageEl.className = "message";
   }
 
+  document.addEventListener("pointermove", event => {
+    if (!dragging || roundFinished) return;
+    const element = document.elementFromPoint(event.clientX, event.clientY);
+    const targetTile = element && element.closest(".tile");
+    if (targetTile) {
+      addTile(Number(targetTile.dataset.index));
+    }
+  });
+
+  document.addEventListener("pointerup", () => {
+    if (dragging) finishWord();
+  });
+
+  document.addEventListener("pointercancel", clearSelection);
+
   clearBtn.addEventListener("click", clearSelection);
   newBtn.addEventListener("click", startNewRound);
-  playAgainBtn.addEventListener("click", startNewRound);
 
   loadDictionary();
 </script>
